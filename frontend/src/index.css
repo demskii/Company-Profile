@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+body { @apply text-metal-800 antialiased; }
+
+.container-page { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
+.btn-primary { @apply inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-accent-500/20 transition-all focus:outline-none focus:ring-4 focus:ring-accent-500/30; }
+.btn-outline { @apply inline-flex items-center gap-2 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-semibold px-6 py-3 rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-primary-300/40; }
+.section { @apply py-16 md:py-24; }
+.section-title { @apply text-3xl md:text-4xl font-extrabold text-metal-800 mb-4; }
+.section-subtitle { @apply text-metal-600 max-w-2xl mb-12; }
