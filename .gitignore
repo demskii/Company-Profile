@@ -1,0 +1,43 @@
+# =====================================================
+# .gitignore - Alumindo Jaya Company Profile
+# Letakkan di folder paling luar (sejajar dengan folder
+# "frontend" dan "backend"). Berlaku untuk semua subfolder.
+# =====================================================
+
+# ---- RAHASIA: jangan pernah di-upload ----
+# Pola tanpa "/" berlaku di folder manapun, jadi otomatis
+# mencakup backend/.env dan frontend/.env
+.env
+.env.*
+# ...kecuali file contoh, supaya orang lain tahu variabel apa saja yang perlu diisi
+!.env.example
+
+# ---- Dependensi ----
+node_modules/
+
+# ---- Hasil build & cache ----
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+
+# ---- Gambar yang diunggah admin lewat dashboard ----
+# Folder dipertahankan lewat .gitkeep, isinya tidak ikut ter-upload
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ---- Log ----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Editor & sistem operasi ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
