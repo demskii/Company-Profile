@@ -37,8 +37,6 @@ Jalankan server:
 npm run dev
 ```
 
-Server berjalan di `http://localhost:4000`.
-
 ### 2. Frontend
 
 ```
