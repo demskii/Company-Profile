@@ -189,9 +189,9 @@ Dari `database/seed.sql`:
 | Field | Nilai |
 |---|---|
 | URL login | `http://localhost:5173/admin/login` |
-| Username | `admin` |
-| Password | `Admin#12345` |
-| Email | `admin@alumindo.co.id` |
+| Username | |
+| Password | |
+| Email | |
 
 **Ganti password setelah login pertama** melalui menu **Akun Saya**.
 
