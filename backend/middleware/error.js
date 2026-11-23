@@ -19,7 +19,7 @@ export function errorHandler(error, req, res, next) {
   if (res.headersSent) return next(error);
 
   if (error.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ success: false, message: 'Ukuran file maksimal 5 MB.' });
+    return res.status(413).json({ success: false, message: 'Ukuran file maksimal 4 MB.' });
   }
   if (error.code === 'ER_DUP_ENTRY') {
     return res.status(409).json({ success: false, message: 'Data dengan nilai unik tersebut sudah ada.' });

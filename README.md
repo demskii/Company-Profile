@@ -469,3 +469,41 @@ npm run build
 - Ganti data statistik dan konten seed dengan data resmi perusahaan.
 - Backup database dan folder `backend/uploads/` secara berkala.
 - Batasi akses `backend/` dan file `.env` dari publik.
+
+---
+
+## 14. Deploy ke Vercel (frontend + backend dalam satu project)
+
+Frontend (`frontend/`) dan API Express (`api/index.js` → `backend/app.js`) dideploy bersamaan sebagai **satu project Vercel** di domain yang sama, jadi cookie login dan CORS tidak bermasalah. Development lokal tidak berubah.
+
+### 14.1 Yang perlu disiapkan sebelum deploy
+
+1. **Database MySQL online.** MySQL XAMPP (`localhost`) tidak bisa diakses dari Vercel. Gunakan MySQL cloud (misalnya TiDB Cloud Starter, Railway, atau hosting MySQL lain), lalu import `database/schema.sql` dan `database/seed.sql`. Jika penyedia tidak mengizinkan `CREATE DATABASE`/`USE`, hapus dua baris itu dari kedua file dan pakai nama database bawaan penyedia di `DB_NAME`.
+2. **Vercel Blob (tipe Public).** Vercel tidak menyimpan file upload di disk. Di project Vercel: **Storage → Create Storage → Blob → Public**, lalu hubungkan ke project. Tanpa ini, fitur upload di Media Library gagal. Gambar bawaan seed (`/uploads/seed/*.svg`) tetap tampil karena disajikan dari `frontend/public/uploads/seed/`.
+
+### 14.2 Langkah deploy
+
+1. Push repo ke GitHub (file `.env` tidak ikut karena di-ignore).
+2. Di Vercel: **Add New → Project → Import** repo ini.
+3. Biarkan **Root Directory** di `./` (jangan pilih `frontend`). Jika muncul pilihan framework, pilih **Other**. `vercel.json` sudah mengatur install, build, dan routing.
+4. Isi **Environment Variables** (Settings → Environment Variables):
+
+| Variabel | Nilai |
+|---|---|
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Dari penyedia MySQL cloud |
+| `DB_SSL` | `true` (jika penyedia mewajibkan SSL/TLS) |
+| `JWT_SECRET` | String acak minimal 32 karakter |
+| `JWT_EXPIRES_IN` | `8h` |
+| `NODE_ENV` | `production` |
+| `CLIENT_URL` | URL project, mis. `https://nama-project.vercel.app` (opsional jika frontend dan API satu domain) |
+
+   `BLOB_STORE_ID` dan `VERCEL_OIDC_TOKEN` ditambahkan otomatis saat store Blob dihubungkan ke project.
+5. Klik **Deploy**. Setelah selesai, cek `https://nama-project.vercel.app/api/health`, harus menampilkan `database: connected`.
+6. **Segera ganti password admin default** lewat menu **Akun Saya**. Repo ini publik, jadi akun bawaan dari `seed.sql` dikenal siapa pun.
+
+### 14.3 Catatan
+
+- Ukuran upload gambar maksimal **4 MB** (Vercel membatasi body request fungsi 4,5 MB).
+- Jika `/api/health` menampilkan error koneksi database, cek `DB_*`, `DB_SSL`, dan pastikan penyedia MySQL mengizinkan koneksi dari luar (IP allowlist terbuka).
+- Setelah mengubah Environment Variables, lakukan **Redeploy** agar nilainya terbaca.
+- Jika menjalankan `node scripts/generate-seed-images.mjs`, salin hasilnya juga ke `frontend/public/uploads/seed/`.

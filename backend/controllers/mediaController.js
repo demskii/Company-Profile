@@ -1,7 +1,8 @@
-import { open, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
+import { unlink, writeFile } from 'node:fs/promises';
+import { extname, join } from 'node:path';
+import { randomBytes } from 'node:crypto';
 import { query } from '../config/db.js';
-import { uploadDir } from '../middleware/upload.js';
+import { isBlobEnabled, uploadDir } from '../middleware/upload.js';
 import { badRequest, notFound, parsePagination, paginationMeta, sendSuccess } from '../utils/helpers.js';
 
 const SIGNATURES = [
@@ -10,20 +11,45 @@ const SIGNATURES = [
   { mime: 'image/webp', bytes: [0x52, 0x49, 0x46, 0x46] },
 ];
 
-async function matchesSignature(filePath, mime) {
-  const handle = await open(filePath, 'r');
-  try {
-    const buffer = Buffer.alloc(12);
-    await handle.read(buffer, 0, 12, 0);
-    const rule = SIGNATURES.find((item) => item.mime === mime);
-    if (!rule) return false;
-    const headerOk = rule.bytes.every((byte, index) => buffer[index] === byte);
-    if (mime === 'image/webp') {
-      return headerOk && buffer.subarray(8, 12).toString('ascii') === 'WEBP';
+// Validasi magic byte langsung dari buffer upload (file belum disimpan ke mana pun).
+function matchesSignature(buffer, mime) {
+  const rule = SIGNATURES.find((item) => item.mime === mime);
+  if (!rule || buffer.length < 12) return false;
+  const headerOk = rule.bytes.every((byte, index) => buffer[index] === byte);
+  if (mime === 'image/webp') {
+    return headerOk && buffer.subarray(8, 12).toString('ascii') === 'WEBP';
+  }
+  return headerOk;
+}
+
+// Simpan gambar: ke Vercel Blob jika aktif (kembalian berupa URL https penuh),
+// atau ke folder backend/uploads untuk mode lokal (kembalian berupa /uploads/<nama>).
+async function storeImage(file) {
+  const filename = `${Date.now()}-${randomBytes(8).toString('hex')}${extname(file.originalname).toLowerCase()}`;
+  if (isBlobEnabled()) {
+    const { put } = await import('@vercel/blob');
+    const blob = await put(`media/${filename}`, new Blob([file.buffer], { type: file.mimetype }), {
+      access: 'public',
+      contentType: file.mimetype,
+    });
+    return { filename, publicPath: blob.url };
+  }
+  await writeFile(join(uploadDir, filename), file.buffer);
+  return { filename, publicPath: `/uploads/${filename}` };
+}
+
+async function removeStoredImage(publicPath) {
+  if (/^https?:\/\//.test(publicPath)) {
+    if (!isBlobEnabled()) return;
+    const { del } = await import('@vercel/blob');
+    await del(publicPath).catch((error) => console.warn('[media] gagal hapus blob:', error.message));
+    return;
+  }
+  if (publicPath.startsWith('/uploads/')) {
+    const filename = publicPath.replace('/uploads/', '');
+    if (!filename.includes('..') && !filename.includes('/')) {
+      await unlink(join(uploadDir, filename)).catch(() => {});
     }
-    return headerOk;
-  } finally {
-    await handle.close();
   }
 }
 
@@ -66,27 +92,29 @@ export async function listMedia(req, res) {
 
 export async function uploadMedia(req, res) {
   if (!req.file) throw badRequest('File gambar wajib diunggah.');
-  const filePath = join(uploadDir, req.file.filename);
-  const valid = await matchesSignature(filePath, req.file.mimetype);
-  if (!valid) {
-    await unlink(filePath).catch(() => {});
+  if (!matchesSignature(req.file.buffer, req.file.mimetype)) {
     throw badRequest('Isi file tidak sesuai dengan format gambar yang diizinkan.');
   }
+  const { filename, publicPath } = await storeImage(req.file);
 
   const title = String(req.body.title || req.file.originalname.replace(/\.[^.]+$/, '')).slice(0, 160);
   const altText = String(req.body.alt_text || title).slice(0, 255);
   const result = await query(
     'INSERT INTO media (filename, original_name, path, mime_type, size_bytes, title, alt_text) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [
-      req.file.filename,
+      filename,
       req.file.originalname.slice(0, 255),
-      `/uploads/${req.file.filename}`,
+      publicPath,
       req.file.mimetype,
       req.file.size,
       title,
       altText,
     ],
-  );
+  ).catch(async (error) => {
+    // Jangan tinggalkan file yatim jika insert ke database gagal.
+    await removeStoredImage(publicPath);
+    throw error;
+  });
   const [row] = await query('SELECT * FROM media WHERE id = ?', [result.insertId]);
   return sendSuccess(res, mediaResponse(row), 201);
 }
@@ -142,11 +170,6 @@ export async function deleteMedia(req, res) {
   }
 
   await query('DELETE FROM media WHERE id = ?', [id]);
-  if (rows[0].path.startsWith('/uploads/')) {
-    const filename = rows[0].path.replace('/uploads/', '');
-    if (!filename.includes('..') && !filename.includes('/')) {
-      await unlink(join(uploadDir, filename)).catch(() => {});
-    }
-  }
+  await removeStoredImage(rows[0].path);
   return sendSuccess(res, { id });
 }

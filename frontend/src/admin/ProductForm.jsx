@@ -209,7 +209,7 @@ export default function ProductForm() {
               onChange={(media) =>
                 setForm((current) => ({ ...current, image_id: media?.id || null, image_url: media?.url || '' }))
               }
-              hint="JPG, PNG, atau WebP. Maksimal 5 MB."
+              hint="JPG, PNG, atau WebP. Maksimal 4 MB."
             />
           </div>
         </aside>

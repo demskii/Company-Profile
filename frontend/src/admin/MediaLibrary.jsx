@@ -44,8 +44,8 @@ export default function MediaLibrary() {
       toast('Format file harus JPG, PNG, atau WebP.', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast('Ukuran file maksimal 5 MB.', 'error');
+    if (file.size > 4 * 1024 * 1024) {
+      toast('Ukuran file maksimal 4 MB.', 'error');
       return;
     }
     setUploading(true);
@@ -157,7 +157,7 @@ export default function MediaLibrary() {
         />
         <ImagePlus size={26} aria-hidden="true" />
         <strong>{uploading ? 'Sedang mengunggah...' : 'Tarik gambar ke sini atau klik untuk memilih'}</strong>
-        <span>JPG, PNG, WebP · Maksimal 5 MB · Nama file dibuat otomatis</span>
+        <span>JPG, PNG, WebP · Maksimal 4 MB · Nama file dibuat otomatis</span>
       </label>
 
       {media.loading ? (

@@ -18,6 +18,11 @@ import contactRoutes from './routes/contactRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 
 const app = express();
+
+// Di Vercel, request melewati satu proxy. Tanpa ini express-rate-limit menolak header
+// X-Forwarded-For dan semua IP terbaca sama. Hanya aktif di Vercel (atau jika TRUST_PROXY diset).
+if (process.env.VERCEL || process.env.TRUST_PROXY) app.set('trust proxy', 1);
+
 const clientOrigins = String(process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim())
@@ -44,16 +49,29 @@ app.use(
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   }),
 );
+// Frontend dan API di satu domain (Vercel) berarti Origin sama dengan Host. Request seperti itu
+// same-origin, jadi diizinkan tanpa perlu menulis tiap domain/preview URL ke CLIENT_URL.
+const isSameOrigin = (req, origin) => {
+  try {
+    return new URL(origin).host === req.headers.host;
+  } catch {
+    return false;
+  }
+};
+
 app.use(
-  cors({
-    origin(origin, callback) {
-      const allowLocal = process.env.NODE_ENV !== 'production' && isLocalOrigin(origin);
-      if (!origin || clientOrigins.includes(origin) || allowLocal) return callback(null, true);
-      console.warn('[cors] origin ditolak:', origin);
-      return callback(new HttpError(403, 'Origin tidak diizinkan oleh CORS.'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  cors((req, callback) => {
+    const origin = req.header('Origin');
+    const allowLocal = process.env.NODE_ENV !== 'production' && isLocalOrigin(origin);
+    if (!origin || isSameOrigin(req, origin) || clientOrigins.includes(origin) || allowLocal) {
+      return callback(null, {
+        origin: true,
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      });
+    }
+    console.warn('[cors] origin ditolak:', origin);
+    return callback(new HttpError(403, 'Origin tidak diizinkan oleh CORS.'));
   }),
 );
 app.use(express.json({ limit: '100kb' }));
