@@ -39,6 +39,14 @@ export const pool = mysql.createPool({
   charset: "utf8mb4",
 });
 
+// Semua timestamp dibaca dalam UTC agar hasilnya sama di server lokal (WIB) dan Vercel (UTC).
+// Event 'connection' dari mysql2/promise memberi koneksi versi callback, jadi pakai .promise().
+pool.on("connection", (connection) => {
+  connection.promise().query("SET time_zone = '+00:00'").catch((error) => {
+    console.warn("[db] gagal set time_zone UTC:", error.message);
+  });
+});
+
 export async function query(sql, params = []) {
   const [rows] = await pool.query(sql, params);
   return rows;

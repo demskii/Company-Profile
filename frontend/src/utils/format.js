@@ -1,6 +1,8 @@
 export function formatDate(value, withTime = false) {
   if (!value) return '-';
-  const normalized = typeof value === 'string' ? value.replace(' ', 'T') : value;
+  // MySQL mengirim DATETIME tanpa zona waktu; backend memakai UTC.
+  const isNaiveDateTime = typeof value === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(value);
+  const normalized = isNaiveDateTime ? `${value.replace(' ', 'T')}Z` : value;
   const date = new Date(normalized);
   if (Number.isNaN(date.getTime())) return String(value);
   return new Intl.DateTimeFormat('id-ID', {
