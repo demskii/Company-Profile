@@ -21,8 +21,6 @@ Website company profile untuk perusahaan manufaktur aluminium **ALUMINDO SEJAHTE
 | Layanan | `/layanan` | Daftar layanan dari database |
 | Kontak | `/kontak` | Informasi kontak, formulir pesan, Google Maps |
 
-Tidak ada fitur portofolio, sesuai kebutuhan.
-
 ### Dashboard admin (`/admin`)
 - Login/logout dengan cookie HttpOnly.
 - Dashboard statistik: jumlah produk, kategori, layanan, media, pesan, pesan belum dibaca, distribusi produk per kategori, pesan terbaru, log aktivitas.
