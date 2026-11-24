@@ -3,8 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
 
 export default function SEO({ title, description }) {
-  const { settings } = useSettings();
+  const { settings, image } = useSettings();
   const location = useLocation();
+  const favicon = image('favicon_id');
 
   useEffect(() => {
     const pageTitle = title ? `${title} | ${settings.company_name}` : settings.seo_title || settings.company_name;
@@ -20,6 +21,20 @@ export default function SEO({ title, description }) {
       document.head.appendChild(tag);
     }
   }, [title, description, settings.company_name, settings.seo_title, settings.meta_description, location.pathname]);
+
+  useEffect(() => {
+    let link = document.querySelector('link[rel="icon"]');
+    if (!favicon) {
+      link?.remove();
+      return;
+    }
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = favicon;
+  }, [favicon]);
 
   return null;
 }

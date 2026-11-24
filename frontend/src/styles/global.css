@@ -336,6 +336,31 @@ ul {
   height: 24px;
 }
 
+.brand-logo {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.brand-logo img {
+  display: block;
+  width: auto;
+  height: 42px;
+  max-width: 210px;
+  object-fit: contain;
+}
+
+.brand--light .brand-logo {
+  background: #fff;
+  border-radius: 9px;
+  padding: 6px 10px;
+}
+
+.brand--light .brand-logo img {
+  height: 34px;
+  max-width: 190px;
+}
+
 .brand-text {
   display: flex;
   flex-direction: column;

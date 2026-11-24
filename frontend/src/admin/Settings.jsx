@@ -118,7 +118,7 @@ export default function SettingsPage() {
               value={form.logo_id}
               previewUrl={previews.logo_id}
               onChange={setImage('logo_id')}
-              hint="Disarankan PNG transparan, minimal 256px."
+              hint="Tampil di header, footer, dan dashboard. Gunakan PNG transparan, minimal 256px."
             />
             <div style={{ height: 20 }} />
             <ImagePickerField
@@ -126,7 +126,7 @@ export default function SettingsPage() {
               value={form.favicon_id}
               previewUrl={previews.favicon_id}
               onChange={setImage('favicon_id')}
-              hint="Gunakan gambar persegi minimal 64x64 px."
+              hint="Ikon tab browser. Gunakan gambar persegi minimal 64x64 px."
             />
           </div>
         </aside>
