@@ -118,7 +118,7 @@ export default function SettingsPage() {
               value={form.logo_id}
               previewUrl={previews.logo_id}
               onChange={setImage('logo_id')}
-              hint="Tampil di header, footer, dan dashboard. Gunakan PNG transparan, minimal 256px."
+              hint="Tampil di header, footer, dan dashboard bersama nama perusahaan. Gunakan PNG transparan, minimal 256px."
             />
             <div style={{ height: 20 }} />
             <ImagePickerField

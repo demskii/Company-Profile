@@ -346,7 +346,7 @@ ul {
   display: block;
   width: auto;
   height: 42px;
-  max-width: 210px;
+  max-width: 150px;
   object-fit: contain;
 }
 
@@ -358,13 +358,14 @@ ul {
 
 .brand--light .brand-logo img {
   height: 34px;
-  max-width: 190px;
+  max-width: 110px;
 }
 
 .brand-text {
   display: flex;
   flex-direction: column;
   line-height: 1.15;
+  min-width: 0;
 }
 
 .brand-name {
@@ -373,6 +374,8 @@ ul {
   letter-spacing: 0.02em;
   color: var(--navy-900);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-sub {
@@ -381,6 +384,8 @@ ul {
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-links {
