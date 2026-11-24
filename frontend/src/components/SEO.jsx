@@ -24,16 +24,13 @@ export default function SEO({ title, description }) {
 
   useEffect(() => {
     let link = document.querySelector('link[rel="icon"]');
-    if (!favicon) {
-      link?.remove();
-      return;
-    }
     if (!link) {
       link = document.createElement('link');
       link.rel = 'icon';
       document.head.appendChild(link);
     }
-    link.href = favicon;
+    // Browser keeps the last icon when the link is removed, so reset to a blank icon instead.
+    link.href = favicon || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22/%3E';
   }, [favicon]);
 
   return null;
